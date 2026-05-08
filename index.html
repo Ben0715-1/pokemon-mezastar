@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宝可梦明耀之星查询</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .app-container { max-width: 900px; margin: 0 auto; padding: 16px; }
+        
+        .header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 24px 20px; border-radius: 16px; text-align: center; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .header h1 { font-size: 22px; font-weight: 800; }
+        .header p { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+
+        .panel { background: white; border-radius: 14px; padding: 18px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .panel-title { font-size: 14px; font-weight: 700; color: #374151; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+
+        .version-select { width: 100%; padding: 12px 16px; border-radius: 10px; border: 2px solid #e5e7eb; font-size: 15px; font-weight: 600; background: #f9fafb; color: #374151; outline: none; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%236b7280'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; }
+        .version-select:focus { border-color: #818cf8; }
+
+        .filter-mode { display: flex; flex-direction: column; gap: 8px; }
+        .mode-option { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; cursor: pointer; border: 2px solid #e5e7eb; transition: all 0.2s; }
+        .mode-option:hover { background: #f3f4f6; }
+        .mode-option.active { border-color: #818cf8; background: #eef2ff; }
+        .mode-radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #d1d5db; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .mode-option.active .mode-radio { border-color: #6366f1; }
+        .mode-option.active .mode-radio::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: #6366f1; }
+        .mode-text { font-size: 13px; color: #4b5563; font-weight: 500; }
+        .mode-option.active .mode-text { color: #4338ca; font-weight: 600; }
+
+        /* ========== 明耀之星属性面板（核心样式） ========== */
+        .type-panel-wrapper { padding: 0; }
+        .type-panel {
+            background: linear-gradient(180deg, #f0eaf8 0%, #e0d6ed 100%);
+            border-radius: 14px;
+            padding: 16px 12px 14px;
+            border: 3px solid #d0c0e0;
+            position: relative;
+        }
+        .type-panel::before {
+            content: '';
+            position: absolute;
+            top: 3px; left: 3px; right: 3px;
+            height: 40%;
+            border-radius: 11px 11px 50% 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+            pointer-events: none;
+        }
+        .type-panel-title {
+            text-align: center;
+            font-weight: 800;
+            font-size: 15px;
+            color: #3d2060;
+            margin-bottom: 14px;
+            letter-spacing: 3px;
+            position: relative;
+        }
+        .type-row {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 4px;
+            position: relative;
+        }
+        .type-row + .type-row { margin-top: 10px; }
+
+        .type-item {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 2px;
+            padding: 3px 6px 3px 3px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 2.5px solid transparent;
+            background: transparent;
+            position: relative;
+        }
+        .type-item:hover { 
+            background: rgba(255,255,255,0.5); 
+            transform: scale(1.06);
+        }
+        .type-item.active { 
+            background: rgba(255,255,255,0.75); 
+            border-color: #7c3aed;
+            box-shadow: 0 0 10px rgba(124,58,237,0.4);
+            transform: scale(1.06);
+        }
+        .type-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+            /* 3D效果 */
+            box-shadow: 
+                inset 0 2px 4px rgba(255,255,255,0.3),
+                inset 0 -3px 4px rgba(0,0,0,0.15),
+                0 2px 4px rgba(0,0,0,0.2);
+            border: 2px solid rgba(0,0,0,0.12);
+        }
+        .type-icon::after {
+            content: '';
+            position: absolute;
+            top: 2px; left: 4px; right: 4px;
+            height: 35%;
+            border-radius: 6px 6px 50% 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 100%);
+        }
+        .type-label {
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 700px) {
+            .type-item { padding: 2px 4px 2px 2px; gap: 1px; }
+            .type-icon { width: 30px; height: 30px; border-radius: 7px; }
+            .type-icon svg { width: 15px; height: 15px; }
+            .type-label { font-size: 9px; }
+            .type-row { gap: 2px; }
+            .type-row + .type-row { margin-top: 6px; }
+        }
+        @media (max-width: 480px) {
+            .type-icon { width: 26px; height: 26px; }
+            .type-icon svg { width: 13px; height: 13px; }
+            .type-label { font-size: 8px; }
+            .type-panel { padding: 12px 6px 10px; }
+        }
+        /* ========== 明耀之星属性面板结束 ========== */
+
+        .search-box { position: relative; margin-bottom: 12px; }
+        .search-input { width: 100%; padding: 12px 12px 12px 42px; border-radius: 10px; border: 2px solid #e5e7eb; font-size: 14px; outline: none; background: #f9fafb; }
+        .search-input:focus { border-color: #818cf8; background: white; }
+        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; color: #9ca3af; }
+
+        .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+        @media (min-width: 768px) { .results-grid { grid-template-columns: repeat(4, 1fr); } }
+
+        .poke-card { border-radius: 12px; overflow: hidden; cursor: pointer; background: white; border: 1.5px solid #e5e7eb; transition: transform 0.2s, box-shadow 0.2s; }
+        .poke-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+        .poke-card-bar { height: 5px; }
+        .poke-card-body { padding: 10px; }
+        .poke-card-name { font-size: 13px; font-weight: 700; color: #1f2937; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .poke-card-note { font-size: 10px; color: #9ca3af; margin-bottom: 4px; }
+        .poke-card-types { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 6px; }
+        .poke-card-type { font-size: 10px; padding: 1px 6px; border-radius: 99px; color: white; font-weight: 600; }
+        .poke-card-footer { display: flex; justify-content: space-between; align-items: center; }
+        .poke-card-ver { font-size: 10px; color: #9ca3af; }
+        .poke-card-icons { display: flex; gap: 3px; }
+        .poke-card-icon { width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: 800; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal-box { background: white; border-radius: 16px; max-width: 640px; width: 100%; max-height: 90vh; overflow-y: auto; transform: scale(0.92); transition: transform 0.25s; }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+        .modal-header { padding: 20px; color: white; border-radius: 16px 16px 0 0; position: relative; }
+        .modal-close { position: absolute; top: 12px; right: 12px; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .modal-close:hover { background: rgba(255,255,255,0.4); }
+        .modal-body { padding: 20px; }
+        .modal-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .modal-card-label { text-align: center; font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 6px; }
+        .modal-card-img { width: 100%; aspect-ratio: 4/5; border-radius: 10px; overflow: hidden; background: #f9fafb; border: 2px solid #e5e7eb; display: flex; align-items: center; justify-content: center; }
+        .modal-card-img img { width: 100%; height: 100%; object-fit: contain; }
+        .modal-card-img.no-img { border: 2px dashed #d1d5db; flex-direction: column; color: #9ca3af; }
+        .modal-info { margin-top: 16px; padding: 12px; background: #f8fafc; border-radius: 10px; font-size: 12px; color: #6b7280; }
+        .modal-info-row { display: flex; justify-content: space-between; padding: 3px 0; }
+        .modal-info-val { font-weight: 600; color: #374151; }
+        .type-badge-sm { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; color: white; }
+        .empty-state { text-align: center; padding: 48px 0; color: #9ca3af; }
+        .reset-btn { padding: 10px 14px; border-radius: 10px; border: 2px solid #e5e7eb; background: white; cursor: pointer; font-size: 14px; transition: background 0.2s; }
+        .reset-btn:hover { background: #f3f4f6; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>📱 宝可梦明耀之星查询</h1>
+            <p>点击卡片查看正反面卡匣图片</p>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">📦 选择版本</div>
+            <select class="version-select" id="versionSelect">
+                <option value="全部版本">全部版本</option>
+                <option value="第五弹">第五弹</option>
+                <option value="第四弹">第四弹</option>
+                <option value="第三弹">第三弹</option>
+                <option value="第二弹">第二弹</option>
+                <option value="第一弹">第一弹</option>
+                <option value="特别盘">特别盘</option>
+                <option value="其它">其它</option>
+            </select>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">⚡ 属性筛选模式</div>
+            <div class="filter-mode">
+                <div class="mode-option active" data-mode="any" onclick="setMode('any')">
+                    <div class="mode-radio"></div>
+                    <span class="mode-text">包含任一选中属性即可</span>
+                </div>
+                <div class="mode-option" data-mode="all" onclick="setMode('all')">
+                    <div class="mode-radio"></div>
+                    <span class="mode-text">必须包含所有选中属性</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 明耀之星属性面板 -->
+        <div class="panel type-panel-wrapper">
+            <div class="type-panel">
+                <div class="type-panel-title">明耀之星属性</div>
+                <div class="type-row" id="typeRow1"></div>
+                <div class="type-row" id="typeRow2"></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title" style="margin-bottom:10px;">
+                <span>✨ 查询结果 (<span id="resultCount">0</span>)</span>
+                <span style="margin-left:auto;"><button class="reset-btn" onclick="resetFilters()">🔄 重置</button></span>
+            </div>
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" class="search-input" placeholder="搜索宝可梦名称...">
+            </div>
+            <div id="resultsGrid" class="results-grid"></div>
+            <div id="emptyState" class="empty-state" style="display:none;">
+                <div style="font-size:40px; margin-bottom:8px;">🔍</div>
+                <div>没有找到匹配的宝可梦</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal" onclick="closeModal(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-header" id="modalHeader">
+                <button class="modal-close" onclick="document.getElementById('modal').classList.remove('active')">✕</button>
+                <div id="modalEmoji" style="font-size:36px; margin-bottom:6px;"></div>
+                <div id="modalName" style="font-size:20px; font-weight:700;"></div>
+                <div id="modalNote" style="font-size:12px; opacity:0.8; margin-top:2px;"></div>
+                <div id="modalMeta" style="display:flex; align-items:center; gap:6px; margin-top:8px; flex-wrap:wrap;"></div>
+            </div>
+            <div class="modal-body">
+                <div style="font-size:14px; font-weight:700; color:#4b5563; margin-bottom:12px;">🎴 卡匣图片</div>
+                <div class="modal-cards">
+                    <div><div class="modal-card-label">正面</div><div class="modal-card-img" id="modalFront"></div></div>
+                    <div><div class="modal-card-label">反面</div><div class="modal-card-img" id="modalBack"></div></div>
+                </div>
+                <div class="modal-info" id="modalInfo"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const TYPES_ROW1 = ['一般','火','水','草','电','冰','格斗','毒','地面'];
+    const TYPES_ROW2 = ['飞行','超能力','虫','岩石','幽灵','龙','恶','钢','妖精'];
+    const TYPES = [...TYPES_ROW1, ...TYPES_ROW2];
+
+    // 图标背景色 - 精确匹配明耀之星卡匣
+    const TC = {
+        '一般':'#9098a0','火':'#e04028','水':'#2880e8','草':'#40a830',
+        '电':'#f0b800','冰':'#48c8d8','格斗':'#e87010','毒':'#8840c0',
+        '地面':'#b08030','飞行':'#6898f0','超能力':'#e04070','虫':'#88a018',
+        '岩石':'#a89838','幽灵':'#604880','龙':'#4858d0','恶':'#504848',
+        '钢':'#5890a8','妖精':'#e070e0'
+    };
+    // 文字标签色
+    const TLC = {
+        '一般':'#606870','火':'#c83020','水':'#1868c0','草':'#288818',
+        '电':'#b89000','冰':'#38a0b0','格斗':'#c05800','毒':'#6830a0',
+        '地面':'#886020','飞行':'#4870c0','超能力':'#b83058','虫':'#607010',
+        '岩石':'#807020','幽灵':'#403060','龙':'#3040a8','恶':'#383030',
+        '钢':'#406878','妖精':'#b850b8'
+    };
+    const TE = {'一般':'⚪','格斗':'🥊','毒':'☠️','地面':'🌍','飞行':'🕊️','虫':'🐛','岩石':'🪨','幽灵':'👻','钢':'⚙️','火':'🔥','水':'💧','电':'⚡','草':'🌿','冰':'❄️','超能力':'🔮','龙':'🐉','恶':'🌑','妖精':'✨'};
+
+    // SVG图标 - 模仿明耀之星属性图标
+    const TYPE_ICONS = {
+        '一般': `<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5" fill="none" stroke="white" stroke-width="2.8"/><circle cx="12" cy="12" r="2.2" fill="white"/></svg>`,
+        '火': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 4c0 0-5 4.5-5 9a5 5 0 0010 0c0-4.5-5-9-5-9z" fill="white"/></svg>`,
+        '水': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 4c-2.5 3.5-5.5 6.5-5.5 10a5.5 5.5 0 0011 0c0-3.5-3-6.5-5.5-10z" fill="white"/></svg>`,
+        '草': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M17 5c-5 0-8 4-9 9 2-2 5-3.5 8-3.5" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 19c0-5 2-8 6-10" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+        '电': `<svg width="20" height="20" viewBox="0 0 24 24"><polygon points="13,2 5,13 11,13 10,22 19,11 13,11" fill="white"/></svg>`,
+        '冰': `<svg width="20" height="20" viewBox="0 0 24 24"><line x1="12" y1="3" x2="12" y2="21" stroke="white" stroke-width="2.8" stroke-linecap="round"/><line x1="3" y1="12" x2="21" y2="12" stroke="white" stroke-width="2.8" stroke-linecap="round"/><line x1="5.5" y1="5.5" x2="18.5" y2="18.5" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="18.5" y1="5.5" x2="5.5" y2="18.5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`,
+        '格斗': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M7 13c0-2 2-4 5-4s5 2 5 4v2c0 1.5-2 3-5 3s-5-1.5-5-3v-2z" fill="white"/><path d="M9 9c0-1.8 1.3-3.5 3-3.5s3 1.7 3 3.5" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+        '毒': `<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="10" r="5.5" fill="none" stroke="white" stroke-width="2.8"/><circle cx="12" cy="10" r="2" fill="white"/><circle cx="9.5" cy="17.5" r="1.8" fill="white"/><circle cx="14.5" cy="17.5" r="1.8" fill="white"/></svg>`,
+        '地面': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M2 8c4 2.5 7-1 10 1s7-1 10 1" stroke="white" stroke-width="2.8" fill="none" stroke-linecap="round"/><path d="M2 13c4 2.5 7-1 10 1s7-1 10 1" stroke="white" stroke-width="2.8" fill="none" stroke-linecap="round"/><path d="M2 18c4 2.5 7-1 10 1s7-1 10 1" stroke="white" stroke-width="2.8" fill="none" stroke-linecap="round"/></svg>`,
+        '飞行': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M3 17l5-5-2-3 13-5-5 13-3-2-5 5z" fill="white"/></svg>`,
+        '超能力': `<svg width="20" height="20" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="8.5" ry="5" fill="none" stroke="white" stroke-width="2.5"/><circle cx="12" cy="12" r="3" fill="white"/></svg>`,
+        '虫': `<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3" fill="white"/><ellipse cx="12" cy="15.5" rx="3.5" ry="5" fill="white"/><line x1="8" y1="6" x2="6" y2="3" stroke="white" stroke-width="2.2" stroke-linecap="round"/><line x1="16" y1="6" x2="18" y2="3" stroke="white" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+        '岩石': `<svg width="20" height="20" viewBox="0 0 24 24"><polygon points="12,4 19,9 17,18 7,18 5,9" fill="white"/></svg>`,
+        '幽灵': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 4c-4 0-6.5 2.8-6.5 6v7.5c0 .6.5 1 .9.6l1.6-1.3c.5-.4 1-.1 1.5.3l1.2 1c.5.4 1 .1 1.5-.3l.8-.7c.5-.4 1-.1 1.5.3l1.2 1c.5.4 1 .1 1.5-.3l1.6-1.3c.4-.4.9 0 .9.6V10c0-3.2-2.5-6-6.7-6z" fill="white"/></svg>`,
+        '龙': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M8 5l4 5.5 4-5.5" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 13l5 7 5-7" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+        '恶': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 4a8 8 0 100 16 8 8 0 000-16z" fill="white"/><path d="M12 4a8 8 0 010 16" fill="#ddd"/><circle cx="12" cy="12" r="3.2" fill="#504848"/></svg>`,
+        '钢': `<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.5" fill="none" stroke="white" stroke-width="2.5"/><circle cx="12" cy="12" r="3" fill="white"/><line x1="12" y1="4" x2="12" y2="7.5" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="12" y1="16.5" x2="12" y2="20" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="4" y1="12" x2="7.5" y2="12" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="16.5" y1="12" x2="20" y2="12" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+        '妖精': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 3l2.2 6.8H21l-5.5 4 2.1 6.5L12 16.2l-5.6 4.1 2.1-6.5-5.5-4h6.8z" fill="white"/></svg>`
+    };
+
+    const IMG_DIR = 'pokemon_images_named';
+
+    const DATA = [
+        {id:1,v:"第五弹",n:"轰镭金刚猩",t:["草"],front:"轰镭金刚猩.png",back:"轰镭金刚猩2.png"},
+        {id:2,v:"第五弹",n:"闪焰王牌",t:["火"],front:"闪焰王牌.png",back:"闪焰王牌2.png"},
+        {id:3,v:"第五弹",n:"千面避役",t:["水"],front:"千面避役.png",back:"千面避役2.png"},
+        {id:4,v:"第五弹",n:"皮卡丘",t:["电"],front:"皮卡丘.png",back:"皮卡丘2.png"},
+        {id:5,v:"第五弹",n:"雷公",t:["电"],front:"雷公.png",back:"雷公2.png"},
+        {id:6,v:"第五弹",n:"炎帝",t:["火"],front:"炎帝.png",back:"炎帝2.png"},
+        {id:7,v:"第五弹",n:"水君",t:["水"],front:"水君.png",back:"水君2.png"},
+        {id:8,v:"第五弹",n:"超梦",t:["超能力"],front:"超梦.png",back:"超梦2.png"},
+        {id:9,v:"第五弹",n:"阿尔宙斯",t:["一般"],front:"阿尔宙斯.png",back:"阿尔宙斯2.png"},
+        {id:10,v:"第五弹",n:"洗翠索罗亚克",t:["幽灵"],front:"洗翠索罗亚克.png",back:"洗翠索罗亚克2.png"},
+        {id:11,v:"第五弹",n:"凯罗斯",t:["虫"],front:"凯罗斯.png",back:"凯罗斯2.png"},
+        {id:12,v:"第五弹",n:"赫拉克罗斯",t:["格斗","虫"],front:"赫拉克罗斯.png",back:"赫拉克罗斯2.png"},
+        {id:13,v:"第五弹",n:"凯路迪欧",t:["格斗","水"],front:"凯路迪欧.png",back:"凯路迪欧2.png"},
+        {id:14,v:"第五弹",n:"玛狃拉",t:["冰","恶"],front:"玛狃拉.png",back:"玛狃拉2.png"},
+        {id:15,v:"第五弹",n:"葱游兵",t:["格斗"],front:"葱游兵.png",back:"葱游兵2.png"},
+        {id:16,v:"第五弹",n:"尼多王",t:["毒","地面"],front:"尼多王.png",back:"尼多王2.png"},
+        {id:17,v:"第五弹",n:"沙漠蜻蜓",t:["地面","龙"],front:"沙漠蜻蜓.png",back:"沙漠蜻蜓2.png"},
+        {id:18,v:"第五弹",n:"鳃鱼海兽",t:["水","冰"],front:"鳃鱼海兽.png",back:"鳃鱼海兽2.png"},
+        {id:19,v:"第五弹",n:"电击魔兽",t:["电"],front:"电击魔兽.png",back:"电击魔兽2.png"},
+        {id:20,v:"第五弹",n:"鸭嘴炎兽",t:["火"],front:"鸭嘴炎兽.png",back:"鸭嘴炎兽2.png"},
+        {id:21,v:"第五弹",n:"颤弦蝾螈",t:["毒"],note:"低调的样子",front:"颤弦蝾螈(毒).png",back:"颤弦蝾螈(毒)2.png"},
+        {id:22,v:"第五弹",n:"颤弦蝾螈",t:["电"],note:"高调的样子",front:"颤弦蝾螈(电).png",back:"颤弦蝾螈(电)2.png"},
+        {id:23,v:"第五弹",n:"雄伟牙",t:["格斗","地面"],front:"雄伟牙.png",back:"雄伟牙2.png"},
+        {id:24,v:"第五弹",n:"锹农炮虫",t:["虫","电"],front:"锹农炮虫.png",back:"锹农炮虫2.png"},
+        {id:25,v:"第五弹",n:"暴雪王",t:["草","冰"],front:"暴雪王.png",back:"暴雪王2.png"},
+        {id:26,v:"第四弹",n:"帝牙卢卡",t:["钢","龙"],front:"帝牙卢卡.png",back:"帝牙卢卡2.png"},
+        {id:27,v:"第四弹",n:"帕路奇亚",t:["水","龙"],front:"帕路奇亚.png",back:"帕路奇亚2.png"},
+        {id:28,v:"第四弹",n:"哲尔尼亚斯",t:["妖精"],front:"哲尔尼亚斯.png",back:"哲尔尼亚斯2.png"},
+        {id:29,v:"第四弹",n:"伊裴尔塔尔",t:["恶"],front:"伊裴尔塔尔.png",back:"伊裴尔塔尔2.png"},
+        {id:30,v:"第四弹",n:"蕾冠王（白）",t:["冰","超能力"],front:"蕾冠王(白).png",back:"蕾冠王(白)2.png"},
+        {id:31,v:"第四弹",n:"蕾冠王（黑）",t:["幽灵","超能力"],front:"蕾冠王(黑).png",back:"蕾冠王(黑)2.png"},
+        {id:32,v:"第四弹",n:"谜拟丘",t:["幽灵","超能力"],front:"谜拟丘.png",back:"谜拟丘2.png"},
+        {id:33,v:"第四弹",n:"酋雷姆（火）",t:["火"],front:"酋雷姆(白).png",back:"酋雷姆(白)2.png"},
+        {id:34,v:"第四弹",n:"酋雷姆（电）",t:["电"],front:"酋雷姆(黑).png",back:"酋雷姆(黑)2.png"},
+        {id:35,v:"第四弹",n:"烈空坐",t:["龙"],front:"烈空坐.png",back:"烈空坐2.png"},
+        {id:36,v:"第三弹",n:"洛奇亚",t:["飞行","超能力"],front:"洛奇亚.png",back:"洛奇亚2.png"},
+        {id:37,v:"第三弹",n:"凤王",t:["飞行","火"],front:"凤王.png",back:"凤王2.png"},
+        {id:38,v:"第三弹",n:"索尔迦雷欧",t:["钢","超能力"],front:"索尔迦雷欧.png",back:"索尔迦雷欧2.png"},
+        {id:39,v:"第三弹",n:"露奈雅拉",t:["幽灵","超能力"],front:"露奈雅拉.png",back:"露奈雅拉2.png"},
+        {id:40,v:"第三弹",n:"甲贺忍蛙",t:["水","恶"],front:"甲贺忍蛙.png",back:"甲贺忍蛙2.png"},
+        {id:41,v:"第三弹",n:"捷拉奥拉",t:["电"],front:"捷拉奥拉.png",back:"捷拉奥拉2.png"},
+        {id:42,v:"第三弹",n:"无极汰那",t:["毒","龙"],front:"无极汰那.png",back:"无极汰那2.png"},
+        {id:43,v:"第三弹",n:"凯路迪欧",t:["格斗","水"],front:"凯路迪欧.png",back:"凯路迪欧2.png"},
+        {id:44,v:"第三弹",n:"长毛巨魔",t:["恶","妖精"],front:"长毛巨魔.png",back:"长毛巨魔2.png"},
+        {id:45,v:"第三弹",n:"基格尔德",t:["地面","龙"],front:"基格尔德.png",back:"基格尔德2.png"},
+        {id:46,v:"第二弹",n:"盖欧卡",t:["水"],front:"盖欧卡.png",back:"盖欧卡2.png"},
+        {id:47,v:"第二弹",n:"固拉多",t:["地面"],front:"固拉多.png",back:"固拉多2.png"},
+        {id:48,v:"第二弹",n:"故勒顿",t:["格斗","电"],front:"故勒顿.png",back:"故勒顿2.png"},
+        {id:49,v:"第二弹",n:"皮卡丘",t:["电"],front:"皮卡丘.png",back:"皮卡丘2.png"},
+        {id:50,v:"第二弹",n:"卡比兽",t:["一般"],front:"卡比兽.png",back:"卡比兽2.png"},
+        {id:51,v:"第二弹",n:"杖尾鳞甲龙",t:["格斗","龙"],front:"杖尾鳞甲龙.png",back:"杖尾鳞甲龙2.png"},
+        {id:52,v:"第二弹",n:"沙奈朵",t:["超能力","妖精"],front:"沙奈朵.png",back:"沙奈朵2.png"},
+        {id:53,v:"第二弹",n:"莱希拉姆",t:["火","龙"],front:"莱希拉姆.png",back:"莱希拉姆2.png"},
+        {id:54,v:"第二弹",n:"捷克罗姆",t:["电","龙"],front:"捷克罗姆.png",back:"捷克罗姆2.png"},
+        {id:55,v:"第二弹",n:"酋雷姆",t:["冰","龙"],front:"酋雷姆.png",back:"酋雷姆2.png"},
+        {id:56,v:"第一弹",n:"超梦",t:["超能力"],front:"超梦.png",back:"超梦2.png"},
+        {id:57,v:"第一弹",n:"梦幻",t:["超能力"],front:"梦幻.png",back:"梦幻2.png"},
+        {id:58,v:"第一弹",n:"苍响",t:["钢","妖精"],front:"苍响.png",back:"苍响2.png"},
+        {id:59,v:"第一弹",n:"藏玛然特",t:["格斗","钢"],front:"藏玛然特.png",back:"藏玛然特2.png"},
+        {id:60,v:"第一弹",n:"班基拉斯",t:["岩石","恶"],front:"班基拉斯.png",back:"班基拉斯2.png"},
+        {id:61,v:"第一弹",n:"巨金怪",t:["钢","超能力"],front:"巨金怪.png",back:"巨金怪2.png"},
+        {id:62,v:"第一弹",n:"密勒顿",t:["电","龙"],front:"密勒顿.png",back:"密勒顿2.png"},
+        {id:63,v:"第一弹",n:"妙蛙花",t:["毒","草"],front:"妙蛙花.png",back:"妙蛙花2.png"},
+        {id:64,v:"第一弹",n:"喷火龙",t:["飞行","火"],front:"喷火龙.png",back:"喷火龙2.png"},
+        {id:65,v:"第一弹",n:"水箭龟",t:["水"],front:"水箭龟.png",back:"水箭龟2.png"},
+        {id:66,v:"特别盘",n:"耿鬼",t:["毒","幽灵"],front:"耿鬼.png",back:""},
+        {id:67,v:"特别盘",n:"路卡利欧",t:["格斗","钢"],front:"路卡利欧.png",back:""},
+        {id:68,v:"特别盘",n:"皮卡丘",t:["电"],front:"皮卡丘.png",back:""},
+        {id:69,v:"特别盘",n:"喷火龙",t:["飞行","火"],front:"喷火龙.png",back:""},
+        {id:70,v:"特别盘",n:"袋兽",t:["一般"],front:"",back:""},
+        {id:71,v:"特别盘",n:"暴鲤龙",t:["飞行","水"],front:"",back:""},
+        {id:72,v:"其它",n:"大王铜象",t:["钢"],front:"大王铜象.png",back:"大王铜象2.png"},
+        {id:73,v:"其它",n:"波士可多拉",t:["岩石","钢"],front:"波士可多拉.png",back:"波士可多拉2.png"},
+        {id:74,v:"其它",n:"大竺葵",t:["草"],front:"大竺葵.png",back:"大竺葵2.png"},
+        {id:75,v:"其它",n:"铁辙迹",t:["地面","钢"],front:"铁辙迹.png",back:"铁辙迹2.png"},
+        {id:76,v:"其它",n:"沙奈朵",t:["超能力","妖精"],front:"沙奈朵.png",back:"沙奈朵2.png"},
+    ];
+
+    let selectedTypes = new Set();
+    let filterMode = 'any';
+
+    function getGradient(types) {
+        const c1 = TC[types[0]];
+        if (types.length === 1) return `linear-gradient(135deg, ${c1}, ${c1}cc)`;
+        return `linear-gradient(135deg, ${c1}, ${TC[types[1]]})`;
+    }
+
+    function initTypeFilters() {
+        document.getElementById('typeRow1').innerHTML = TYPES_ROW1.map(t => createTypeItem(t)).join('');
+        document.getElementById('typeRow2').innerHTML = TYPES_ROW2.map(t => createTypeItem(t)).join('');
+    }
+
+    function createTypeItem(type) {
+        return `<div class="type-item" data-type="${type}" onclick="toggleType('${type}')">
+            <div class="type-icon" style="background:${TC[type]}">${TYPE_ICONS[type]}</div>
+            <span class="type-label" style="color:${TLC[type]}">${type}</span>
+        </div>`;
+    }
+
+    function toggleType(type) {
+        selectedTypes.has(type) ? selectedTypes.delete(type) : selectedTypes.add(type);
+        document.querySelectorAll('.type-item').forEach(el => el.classList.toggle('active', selectedTypes.has(el.dataset.type)));
+        renderResults();
+    }
+
+    function setMode(mode) {
+        filterMode = mode;
+        document.querySelectorAll('.mode-option').forEach(el => el.classList.toggle('active', el.dataset.mode === mode));
+        renderResults();
+    }
+
+    function resetFilters() {
+        selectedTypes.clear(); filterMode = 'any';
+        document.getElementById('searchInput').value = '';
+        document.getElementById('versionSelect').value = '全部版本';
+        document.querySelectorAll('.type-item').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.mode-option').forEach(el => el.classList.toggle('active', el.dataset.mode === 'any'));
+        renderResults();
+    }
+
+    function getFiltered() {
+        const s = document.getElementById('searchInput').value.trim();
+        const v = document.getElementById('versionSelect').value;
+        return DATA.filter(p => {
+            if (v !== '全部版本' && p.v !== v) return false;
+            if (s && !p.n.includes(s) && !(p.note && p.note.includes(s))) return false;
+            if (selectedTypes.size > 0) {
+                return filterMode === 'any' ? p.t.some(t => selectedTypes.has(t)) : [...selectedTypes].every(t => p.t.includes(t));
+            }
+            return true;
+        });
+    }
+
+    function renderResults() {
+        const filtered = getFiltered();
+        document.getElementById('resultCount').textContent = filtered.length;
+        const grid = document.getElementById('resultsGrid');
+        const empty = document.getElementById('emptyState');
+        if (filtered.length === 0) { grid.style.display='none'; empty.style.display='block'; return; }
+        grid.style.display=''; empty.style.display='none';
+        grid.innerHTML = filtered.map(p => `
+            <div class="poke-card" onclick="openModal(${p.id})">
+                <div class="poke-card-bar" style="background:${getGradient(p.t)}"></div>
+                <div class="poke-card-body">
+                    <div class="poke-card-name">${TE[p.t[0]]} ${p.n}</div>
+                    ${p.note?`<div class="poke-card-note">(${p.note})</div>`:''}
+                    <div class="poke-card-types">${p.t.map(tp=>`<span class="poke-card-type" style="background:${TC[tp]}">${tp}</span>`).join('')}</div>
+                    <div class="poke-card-footer">
+                        <span class="poke-card-ver">${p.v}</span>
+                        <div class="poke-card-icons">
+                            ${p.front?'<span class="poke-card-icon" style="background:#dcfce7;color:#16a34a;">正</span>':''}
+                            ${p.back?'<span class="poke-card-icon" style="background:#dbeafe;color:#2563eb;">反</span>':''}
+                        </div>
+                    </div>
+                </div>
+            </div>`).join('');
+    }
+
+    function openModal(id) {
+        const p = DATA.find(d=>d.id===id); if(!p) return;
+        document.getElementById('modalHeader').style.background = getGradient(p.t);
+        document.getElementById('modalEmoji').textContent = TE[p.t[0]];
+        document.getElementById('modalName').textContent = p.n;
+        document.getElementById('modalNote').textContent = p.note?`(${p.note})`:'';
+        document.getElementById('modalMeta').innerHTML = `<span style="padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;background:rgba(255,255,255,0.2);">${p.v}</span>${p.t.map(tp=>`<span class="type-badge-sm" style="background:${TC[tp]}">${TE[tp]} ${tp}</span>`).join('')}`;
+        const fe=document.getElementById('modalFront'),be=document.getElementById('modalBack');
+        if(p.front){fe.className='modal-card-img';fe.innerHTML=`<img src="${IMG_DIR}/${p.front}" alt="${p.n}" onerror="this.parentElement.className='modal-card-img no-img';this.parentElement.innerHTML='<div style=font-size:28px>⚠️</div><div style=font-size:11px>加载失败</div>'">`;}
+        else{fe.className='modal-card-img no-img';fe.innerHTML='<div style="font-size:28px">🚫</div><div style="font-size:11px">暂无图片</div>';}
+        if(p.back){be.className='modal-card-img';be.innerHTML=`<img src="${IMG_DIR}/${p.back}" alt="${p.n}" onerror="this.parentElement.className='modal-card-img no-img';this.parentElement.innerHTML='<div style=font-size:28px>⚠️</div><div style=font-size:11px>加载失败</div>'">`;}
+        else{be.className='modal-card-img no-img';be.innerHTML='<div style="font-size:28px">🚫</div><div style="font-size:11px">暂无图片</div>';}
+        document.getElementById('modalInfo').innerHTML=`<div class="modal-info-row"><span>版本</span><span class="modal-info-val">${p.v}</span></div><div class="modal-info-row"><span>属性</span><span class="modal-info-val">${p.t.map(tp=>TE[tp]+tp).join(' / ')}</span></div><div class="modal-info-row"><span>正面</span><span class="modal-info-val" style="color:${p.front?'#16a34a':'#9ca3af'}">${p.front?'✅ 有':'❌ 无'}</span></div><div class="modal-info-row"><span>反面</span><span class="modal-info-val" style="color:${p.back?'#16a34a':'#9ca3af'}">${p.back?'✅ 有':'❌ 无'}</span></div>`;
+        document.getElementById('modal').classList.add('active');
+    }
+    function closeModal(e){if(e.target===e.currentTarget)document.getElementById('modal').classList.remove('active');}
+    document.getElementById('searchInput').addEventListener('input',renderResults);
+    document.getElementById('versionSelect').addEventListener('change',renderResults);
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('modal').classList.remove('active');});
+    initTypeFilters(); renderResults();
+    </script>
+</body>
+</html>
