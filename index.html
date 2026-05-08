@@ -7,13 +7,13 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-        .app-container { max-width: 900px; margin: 0 auto; padding: 16px; }
+        .app-container { max-width: 900px; margin: 0 auto; padding: 12px; }
         
-        .header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 24px 20px; border-radius: 16px; text-align: center; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .header h1 { font-size: 22px; font-weight: 800; }
-        .header p { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+        .header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 20px 16px; border-radius: 14px; text-align: center; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .header h1 { font-size: 20px; font-weight: 800; }
+        .header p { font-size: 11px; color: #94a3b8; margin-top: 4px; }
 
-        .panel { background: white; border-radius: 14px; padding: 18px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .panel { background: white; border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
         .panel-title { font-size: 14px; font-weight: 700; color: #374151; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
 
         .version-select { width: 100%; padding: 12px 16px; border-radius: 10px; border: 2px solid #e5e7eb; font-size: 15px; font-weight: 600; background: #f9fafb; color: #374151; outline: none; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%236b7280'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; }
@@ -29,14 +29,15 @@
         .mode-text { font-size: 13px; color: #4b5563; font-weight: 500; }
         .mode-option.active .mode-text { color: #4338ca; font-weight: 600; }
 
-        /* ========== 明耀之星属性面板（核心样式） ========== */
+        /* ========== 明耀之星属性面板 ========== */
         .type-panel-wrapper { padding: 0; }
         .type-panel {
             background: linear-gradient(180deg, #f0eaf8 0%, #e0d6ed 100%);
             border-radius: 14px;
-            padding: 16px 12px 14px;
+            padding: 14px 10px 12px;
             border: 3px solid #d0c0e0;
             position: relative;
+            overflow: hidden;
         }
         .type-panel::before {
             content: '';
@@ -52,52 +53,49 @@
             font-weight: 800;
             font-size: 15px;
             color: #3d2060;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             letter-spacing: 3px;
             position: relative;
         }
-        .type-row {
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            gap: 4px;
+        .type-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 6px 4px;
+            justify-items: center;
             position: relative;
         }
-        .type-row + .type-row { margin-top: 10px; }
-
         .type-item {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             align-items: center;
             gap: 2px;
-            padding: 3px 6px 3px 3px;
+            padding: 4px;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.15s;
             border: 2.5px solid transparent;
             background: transparent;
-            position: relative;
+            width: 100%;
         }
         .type-item:hover { 
             background: rgba(255,255,255,0.5); 
-            transform: scale(1.06);
+            transform: scale(1.08);
         }
         .type-item.active { 
-            background: rgba(255,255,255,0.75); 
+            background: rgba(255,255,255,0.8); 
             border-color: #7c3aed;
-            box-shadow: 0 0 10px rgba(124,58,237,0.4);
-            transform: scale(1.06);
+            box-shadow: 0 0 8px rgba(124,58,237,0.4);
+            transform: scale(1.08);
         }
         .type-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 9px;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
             position: relative;
-            /* 3D效果 */
             box-shadow: 
                 inset 0 2px 4px rgba(255,255,255,0.3),
                 inset 0 -3px 4px rgba(0,0,0,0.15),
@@ -109,42 +107,47 @@
             position: absolute;
             top: 2px; left: 4px; right: 4px;
             height: 35%;
-            border-radius: 6px 6px 50% 50%;
+            border-radius: 5px 5px 50% 50%;
             background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 100%);
         }
         .type-label {
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 800;
             white-space: nowrap;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
+            text-align: center;
         }
 
         @media (max-width: 700px) {
-            .type-item { padding: 2px 4px 2px 2px; gap: 1px; }
-            .type-icon { width: 30px; height: 30px; border-radius: 7px; }
-            .type-icon svg { width: 15px; height: 15px; }
-            .type-label { font-size: 9px; }
-            .type-row { gap: 2px; }
-            .type-row + .type-row { margin-top: 6px; }
+            .type-grid { grid-template-columns: repeat(6, 1fr); gap: 6px 4px; }
+            .type-icon { width: 34px; height: 34px; }
         }
-        @media (max-width: 480px) {
-            .type-icon { width: 26px; height: 26px; }
-            .type-icon svg { width: 13px; height: 13px; }
-            .type-label { font-size: 8px; }
+        @media (max-width: 420px) {
+            .type-grid { grid-template-columns: repeat(5, 1fr); gap: 5px 3px; }
+            .type-icon { width: 32px; height: 32px; }
+            .type-icon svg { width: 16px; height: 16px; }
+            .type-label { font-size: 9px; }
+            .type-item { padding: 3px 2px; }
             .type-panel { padding: 12px 6px 10px; }
         }
-        /* ========== 明耀之星属性面板结束 ========== */
+        @media (max-width: 350px) {
+            .type-grid { grid-template-columns: repeat(4, 1fr); }
+            .type-icon { width: 30px; height: 30px; }
+        }
+        /* ========== 属性面板结束 ========== */
 
         .search-box { position: relative; margin-bottom: 12px; }
         .search-input { width: 100%; padding: 12px 12px 12px 42px; border-radius: 10px; border: 2px solid #e5e7eb; font-size: 14px; outline: none; background: #f9fafb; }
         .search-input:focus { border-color: #818cf8; background: white; }
         .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 16px; color: #9ca3af; }
 
-        .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-        @media (min-width: 768px) { .results-grid { grid-template-columns: repeat(4, 1fr); } }
+        .results-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        @media (min-width: 600px) { .results-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 800px) { .results-grid { grid-template-columns: repeat(4, 1fr); } }
 
         .poke-card { border-radius: 12px; overflow: hidden; cursor: pointer; background: white; border: 1.5px solid #e5e7eb; transition: transform 0.2s, box-shadow 0.2s; }
         .poke-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+        .poke-card:active { transform: scale(0.97); }
         .poke-card-bar { height: 5px; }
         .poke-card-body { padding: 10px; }
         .poke-card-name { font-size: 13px; font-weight: 700; color: #1f2937; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -174,7 +177,7 @@
         .modal-info-val { font-weight: 600; color: #374151; }
         .type-badge-sm { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; color: white; }
         .empty-state { text-align: center; padding: 48px 0; color: #9ca3af; }
-        .reset-btn { padding: 10px 14px; border-radius: 10px; border: 2px solid #e5e7eb; background: white; cursor: pointer; font-size: 14px; transition: background 0.2s; }
+        .reset-btn { padding: 8px 14px; border-radius: 10px; border: 2px solid #e5e7eb; background: white; cursor: pointer; font-size: 13px; font-weight: 600; transition: background 0.2s; }
         .reset-btn:hover { background: #f3f4f6; }
     </style>
 </head>
@@ -213,12 +216,10 @@
             </div>
         </div>
 
-        <!-- 明耀之星属性面板 -->
         <div class="panel type-panel-wrapper">
             <div class="type-panel">
                 <div class="type-panel-title">明耀之星属性</div>
-                <div class="type-row" id="typeRow1"></div>
-                <div class="type-row" id="typeRow2"></div>
+                <div class="type-grid" id="typeGrid"></div>
             </div>
         </div>
 
@@ -239,7 +240,6 @@
         </div>
     </div>
 
-    <!-- Modal -->
     <div class="modal-overlay" id="modal" onclick="closeModal(event)">
         <div class="modal-box" onclick="event.stopPropagation()">
             <div class="modal-header" id="modalHeader">
@@ -261,48 +261,31 @@
     </div>
 
     <script>
-    const TYPES_ROW1 = ['一般','火','水','草','电','冰','格斗','毒','地面'];
-    const TYPES_ROW2 = ['飞行','超能力','虫','岩石','幽灵','龙','恶','钢','妖精'];
-    const TYPES = [...TYPES_ROW1, ...TYPES_ROW2];
+    const TYPES = ['一般','火','水','草','电','冰','格斗','毒','地面','飞行','超能力','虫','岩石','幽灵','龙','恶','钢','妖精'];
 
-    // 图标背景色 - 精确匹配明耀之星卡匣
-    const TC = {
-        '一般':'#9098a0','火':'#e04028','水':'#2880e8','草':'#40a830',
-        '电':'#f0b800','冰':'#48c8d8','格斗':'#e87010','毒':'#8840c0',
-        '地面':'#b08030','飞行':'#6898f0','超能力':'#e04070','虫':'#88a018',
-        '岩石':'#a89838','幽灵':'#604880','龙':'#4858d0','恶':'#504848',
-        '钢':'#5890a8','妖精':'#e070e0'
-    };
-    // 文字标签色
-    const TLC = {
-        '一般':'#606870','火':'#c83020','水':'#1868c0','草':'#288818',
-        '电':'#b89000','冰':'#38a0b0','格斗':'#c05800','毒':'#6830a0',
-        '地面':'#886020','飞行':'#4870c0','超能力':'#b83058','虫':'#607010',
-        '岩石':'#807020','幽灵':'#403060','龙':'#3040a8','恶':'#383030',
-        '钢':'#406878','妖精':'#b850b8'
-    };
+    const TC = {'一般':'#9098a0','火':'#e04028','水':'#2880e8','草':'#40a830','电':'#f0b800','冰':'#48c8d8','格斗':'#e87010','毒':'#8840c0','地面':'#b08030','飞行':'#6898f0','超能力':'#e04070','虫':'#88a018','岩石':'#a89838','幽灵':'#604880','龙':'#4858d0','恶':'#504848','钢':'#5890a8','妖精':'#e070e0'};
+    const TLC = {'一般':'#606870','火':'#c83020','水':'#1868c0','草':'#288818','电':'#b89000','冰':'#38a0b0','格斗':'#c05800','毒':'#6830a0','地面':'#886020','飞行':'#4870c0','超能力':'#b83058','虫':'#607010','岩石':'#807020','幽灵':'#403060','龙':'#3040a8','恶':'#383030','钢':'#406878','妖精':'#b850b8'};
     const TE = {'一般':'⚪','格斗':'🥊','毒':'☠️','地面':'🌍','飞行':'🕊️','虫':'🐛','岩石':'🪨','幽灵':'👻','钢':'⚙️','火':'🔥','水':'💧','电':'⚡','草':'🌿','冰':'❄️','超能力':'🔮','龙':'🐉','恶':'🌑','妖精':'✨'};
 
-    // SVG图标 - 模仿明耀之星属性图标
     const TYPE_ICONS = {
-        '一般': `<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5" fill="none" stroke="white" stroke-width="2.8"/><circle cx="12" cy="12" r="2.2" fill="white"/></svg>`,
-        '火': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 4c0 0-5 4.5-5 9a5 5 0 0010 0c0-4.5-5-9-5-9z" fill="white"/></svg>`,
-        '水': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 4c-2.5 3.5-5.5 6.5-5.5 10a5.5 5.5 0 0011 0c0-3.5-3-6.5-5.5-10z" fill="white"/></svg>`,
-        '草': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M17 5c-5 0-8 4-9 9 2-2 5-3.5 8-3.5" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 19c0-5 2-8 6-10" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>`,
-        '电': `<svg width="20" height="20" viewBox="0 0 24 24"><polygon points="13,2 5,13 11,13 10,22 19,11 13,11" fill="white"/></svg>`,
-        '冰': `<svg width="20" height="20" viewBox="0 0 24 24"><line x1="12" y1="3" x2="12" y2="21" stroke="white" stroke-width="2.8" stroke-linecap="round"/><line x1="3" y1="12" x2="21" y2="12" stroke="white" stroke-width="2.8" stroke-linecap="round"/><line x1="5.5" y1="5.5" x2="18.5" y2="18.5" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="18.5" y1="5.5" x2="5.5" y2="18.5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`,
-        '格斗': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M7 13c0-2 2-4 5-4s5 2 5 4v2c0 1.5-2 3-5 3s-5-1.5-5-3v-2z" fill="white"/><path d="M9 9c0-1.8 1.3-3.5 3-3.5s3 1.7 3 3.5" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>`,
-        '毒': `<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="10" r="5.5" fill="none" stroke="white" stroke-width="2.8"/><circle cx="12" cy="10" r="2" fill="white"/><circle cx="9.5" cy="17.5" r="1.8" fill="white"/><circle cx="14.5" cy="17.5" r="1.8" fill="white"/></svg>`,
-        '地面': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M2 8c4 2.5 7-1 10 1s7-1 10 1" stroke="white" stroke-width="2.8" fill="none" stroke-linecap="round"/><path d="M2 13c4 2.5 7-1 10 1s7-1 10 1" stroke="white" stroke-width="2.8" fill="none" stroke-linecap="round"/><path d="M2 18c4 2.5 7-1 10 1s7-1 10 1" stroke="white" stroke-width="2.8" fill="none" stroke-linecap="round"/></svg>`,
-        '飞行': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M3 17l5-5-2-3 13-5-5 13-3-2-5 5z" fill="white"/></svg>`,
-        '超能力': `<svg width="20" height="20" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="8.5" ry="5" fill="none" stroke="white" stroke-width="2.5"/><circle cx="12" cy="12" r="3" fill="white"/></svg>`,
-        '虫': `<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3" fill="white"/><ellipse cx="12" cy="15.5" rx="3.5" ry="5" fill="white"/><line x1="8" y1="6" x2="6" y2="3" stroke="white" stroke-width="2.2" stroke-linecap="round"/><line x1="16" y1="6" x2="18" y2="3" stroke="white" stroke-width="2.2" stroke-linecap="round"/></svg>`,
-        '岩石': `<svg width="20" height="20" viewBox="0 0 24 24"><polygon points="12,4 19,9 17,18 7,18 5,9" fill="white"/></svg>`,
-        '幽灵': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 4c-4 0-6.5 2.8-6.5 6v7.5c0 .6.5 1 .9.6l1.6-1.3c.5-.4 1-.1 1.5.3l1.2 1c.5.4 1 .1 1.5-.3l.8-.7c.5-.4 1-.1 1.5.3l1.2 1c.5.4 1 .1 1.5-.3l1.6-1.3c.4-.4.9 0 .9.6V10c0-3.2-2.5-6-6.7-6z" fill="white"/></svg>`,
-        '龙': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M8 5l4 5.5 4-5.5" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 13l5 7 5-7" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-        '恶': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 4a8 8 0 100 16 8 8 0 000-16z" fill="white"/><path d="M12 4a8 8 0 010 16" fill="#ddd"/><circle cx="12" cy="12" r="3.2" fill="#504848"/></svg>`,
-        '钢': `<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.5" fill="none" stroke="white" stroke-width="2.5"/><circle cx="12" cy="12" r="3" fill="white"/><line x1="12" y1="4" x2="12" y2="7.5" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="12" y1="16.5" x2="12" y2="20" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="4" y1="12" x2="7.5" y2="12" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="16.5" y1="12" x2="20" y2="12" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>`,
-        '妖精': `<svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 3l2.2 6.8H21l-5.5 4 2.1 6.5L12 16.2l-5.6 4.1 2.1-6.5-5.5-4h6.8z" fill="white"/></svg>`
+        '一般': `<svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5" fill="none" stroke="white" stroke-width="2.8"/><circle cx="12" cy="12" r="2.2" fill="white"/></svg>`,
+        '火': `<svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 4c0 0-5 4.5-5 9a5 5 0 0010 0c0-4.5-5-9-5-9z" fill="white"/></svg>`,
+        '水': `<svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 4c-2.5 3.5-5.5 6.5-5.5 10a5.5 5.5 0 0011 0c0-3.5-3-6.5-5.5-10z" fill="white"/></svg>`,
+        '草': `<svg width="18" height="18" viewBox="0 0 24 24"><path d="M17 5c-5 0-8 4-9 9 2-2 5-3.5 8-3.5" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 19c0-5 2-8 6-10" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+        '电': `<svg width="18" height="18" viewBox="0 0 24 24"><polygon points="13,2 5,13 11,13 10,22 19,11 13,11" fill="white"/></svg>`,
+        '冰': `<svg width="18" height="18" viewBox="0 0 24 24"><line x1="12" y1="3" x2="12" y2="21" stroke="white" stroke-width="2.8" stroke-linecap="round"/><line x1="3" y1="12" x2="21" y2="12" stroke="white" stroke-width="2.8" stroke-linecap="round"/><line x1="5.5" y1="5.5" x2="18.5" y2="18.5" stroke="white" stroke-width="2" stroke-linecap="round"/><line x1="18.5" y1="5.5" x2="5.5" y2="18.5" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`,
+        '格斗': `<svg width="18" height="18" viewBox="0 0 24 24"><path d="M7 13c0-2 2-4 5-4s5 2 5 4v2c0 1.5-2 3-5 3s-5-1.5-5-3v-2z" fill="white"/><path d="M9 9c0-1.8 1.3-3.5 3-3.5s3 1.7 3 3.5" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+        '毒': `<svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="10" r="5.5" fill="none" stroke="white" stroke-width="2.8"/><circle cx="12" cy="10" r="2" fill="white"/><circle cx="9.5" cy="17.5" r="1.8" fill="white"/><circle cx="14.5" cy="17.5" r="1.8" fill="white"/></svg>`,
+        '地面': `<svg width="18" height="18" viewBox="0 0 24 24"><path d="M2 8c4 2.5 7-1 10 1s7-1 10 1" stroke="white" stroke-width="2.8" fill="none" stroke-linecap="round"/><path d="M2 13c4 2.5 7-1 10 1s7-1 10 1" stroke="white" stroke-width="2.8" fill="none" stroke-linecap="round"/><path d="M2 18c4 2.5 7-1 10 1s7-1 10 1" stroke="white" stroke-width="2.8" fill="none" stroke-linecap="round"/></svg>`,
+        '飞行': `<svg width="18" height="18" viewBox="0 0 24 24"><path d="M3 17l5-5-2-3 13-5-5 13-3-2-5 5z" fill="white"/></svg>`,
+        '超能力': `<svg width="18" height="18" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="8.5" ry="5" fill="none" stroke="white" stroke-width="2.5"/><circle cx="12" cy="12" r="3" fill="white"/></svg>`,
+        '虫': `<svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3" fill="white"/><ellipse cx="12" cy="15.5" rx="3.5" ry="5" fill="white"/><line x1="8" y1="6" x2="6" y2="3" stroke="white" stroke-width="2.2" stroke-linecap="round"/><line x1="16" y1="6" x2="18" y2="3" stroke="white" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+        '岩石': `<svg width="18" height="18" viewBox="0 0 24 24"><polygon points="12,4 19,9 17,18 7,18 5,9" fill="white"/></svg>`,
+        '幽灵': `<svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 4c-4 0-6.5 2.8-6.5 6v7.5c0 .6.5 1 .9.6l1.6-1.3c.5-.4 1-.1 1.5.3l1.2 1c.5.4 1 .1 1.5-.3l.8-.7c.5-.4 1-.1 1.5.3l1.2 1c.5.4 1 .1 1.5-.3l1.6-1.3c.4-.4.9 0 .9.6V10c0-3.2-2.5-6-6.7-6z" fill="white"/></svg>`,
+        '龙': `<svg width="18" height="18" viewBox="0 0 24 24"><path d="M8 5l4 5.5 4-5.5" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 13l5 7 5-7" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+        '恶': `<svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 4a8 8 0 100 16 8 8 0 000-16z" fill="white"/><path d="M12 4a8 8 0 010 16" fill="#ddd"/><circle cx="12" cy="12" r="3.2" fill="#504848"/></svg>`,
+        '钢': `<svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.5" fill="none" stroke="white" stroke-width="2.5"/><circle cx="12" cy="12" r="3" fill="white"/><line x1="12" y1="4" x2="12" y2="7.5" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="12" y1="16.5" x2="12" y2="20" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="4" y1="12" x2="7.5" y2="12" stroke="white" stroke-width="2.5" stroke-linecap="round"/><line x1="16.5" y1="12" x2="20" y2="12" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>`,
+        '妖精': `<svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 3l2.2 6.8H21l-5.5 4 2.1 6.5L12 16.2l-5.6 4.1 2.1-6.5-5.5-4h6.8z" fill="white"/></svg>`
     };
 
     const IMG_DIR = 'pokemon_images_named';
@@ -396,15 +379,12 @@
     }
 
     function initTypeFilters() {
-        document.getElementById('typeRow1').innerHTML = TYPES_ROW1.map(t => createTypeItem(t)).join('');
-        document.getElementById('typeRow2').innerHTML = TYPES_ROW2.map(t => createTypeItem(t)).join('');
-    }
-
-    function createTypeItem(type) {
-        return `<div class="type-item" data-type="${type}" onclick="toggleType('${type}')">
-            <div class="type-icon" style="background:${TC[type]}">${TYPE_ICONS[type]}</div>
-            <span class="type-label" style="color:${TLC[type]}">${type}</span>
-        </div>`;
+        document.getElementById('typeGrid').innerHTML = TYPES.map(t => `
+            <div class="type-item" data-type="${t}" onclick="toggleType('${t}')">
+                <div class="type-icon" style="background:${TC[t]}">${TYPE_ICONS[t]}</div>
+                <span class="type-label" style="color:${TLC[t]}">${t}</span>
+            </div>
+        `).join('');
     }
 
     function toggleType(type) {
@@ -473,14 +453,21 @@
         document.getElementById('modalName').textContent = p.n;
         document.getElementById('modalNote').textContent = p.note?`(${p.note})`:'';
         document.getElementById('modalMeta').innerHTML = `<span style="padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;background:rgba(255,255,255,0.2);">${p.v}</span>${p.t.map(tp=>`<span class="type-badge-sm" style="background:${TC[tp]}">${TE[tp]} ${tp}</span>`).join('')}`;
+        
         const fe=document.getElementById('modalFront'),be=document.getElementById('modalBack');
-        if(p.front){fe.className='modal-card-img';fe.innerHTML=`<img src="${IMG_DIR}/${p.front}" alt="${p.n}" onerror="this.parentElement.className='modal-card-img no-img';this.parentElement.innerHTML='<div style=font-size:28px>⚠️</div><div style=font-size:11px>加载失败</div>'">`;}
+        if(p.front){fe.className='modal-card-img';fe.innerHTML=`<img src="${IMG_DIR}/${p.front}" alt="${p.n} 正面" onerror="this.parentElement.className='modal-card-img no-img';this.parentElement.innerHTML='<div style=font-size:28px>⚠️</div><div style=font-size:11px>加载失败</div>'">`;}
         else{fe.className='modal-card-img no-img';fe.innerHTML='<div style="font-size:28px">🚫</div><div style="font-size:11px">暂无图片</div>';}
-        if(p.back){be.className='modal-card-img';be.innerHTML=`<img src="${IMG_DIR}/${p.back}" alt="${p.n}" onerror="this.parentElement.className='modal-card-img no-img';this.parentElement.innerHTML='<div style=font-size:28px>⚠️</div><div style=font-size:11px>加载失败</div>'">`;}
+        if(p.back){be.className='modal-card-img';be.innerHTML=`<img src="${IMG_DIR}/${p.back}" alt="${p.n} 反面" onerror="this.parentElement.className='modal-card-img no-img';this.parentElement.innerHTML='<div style=font-size:28px>⚠️</div><div style=font-size:11px>加载失败</div>'">`;}
         else{be.className='modal-card-img no-img';be.innerHTML='<div style="font-size:28px">🚫</div><div style="font-size:11px">暂无图片</div>';}
-        document.getElementById('modalInfo').innerHTML=`<div class="modal-info-row"><span>版本</span><span class="modal-info-val">${p.v}</span></div><div class="modal-info-row"><span>属性</span><span class="modal-info-val">${p.t.map(tp=>TE[tp]+tp).join(' / ')}</span></div><div class="modal-info-row"><span>正面</span><span class="modal-info-val" style="color:${p.front?'#16a34a':'#9ca3af'}">${p.front?'✅ 有':'❌ 无'}</span></div><div class="modal-info-row"><span>反面</span><span class="modal-info-val" style="color:${p.back?'#16a34a':'#9ca3af'}">${p.back?'✅ 有':'❌ 无'}</span></div>`;
+        
+        document.getElementById('modalInfo').innerHTML=`
+            <div class="modal-info-row"><span>版本</span><span class="modal-info-val">${p.v}</span></div>
+            <div class="modal-info-row"><span>属性</span><span class="modal-info-val">${p.t.map(tp=>TE[tp]+tp).join(' / ')}</span></div>
+            <div class="modal-info-row"><span>正面</span><span class="modal-info-val" style="color:${p.front?'#16a34a':'#9ca3af'}">${p.front?'✅ 有':'❌ 无'}</span></div>
+            <div class="modal-info-row"><span>反面</span><span class="modal-info-val" style="color:${p.back?'#16a34a':'#9ca3af'}">${p.back?'✅ 有':'❌ 无'}</span></div>`;
         document.getElementById('modal').classList.add('active');
     }
+
     function closeModal(e){if(e.target===e.currentTarget)document.getElementById('modal').classList.remove('active');}
     document.getElementById('searchInput').addEventListener('input',renderResults);
     document.getElementById('versionSelect').addEventListener('change',renderResults);
